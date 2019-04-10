@@ -14,49 +14,41 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Impinj.OctaneSdk">
-      <HintPath>..\..\Octane_SDK_.NET_2_24_1\lib\Impinj.OctaneSdk.dll</HintPath>
-    </Reference>
     <Reference Include="LLRP">
-      <HintPath>..\..\Octane_SDK_.NET_2_24_1\lib\LLRP.dll</HintPath>
+      <HintPath>..\123\LLRP.dll</HintPath>
     </Reference>
     <Reference Include="LLRP.Impinj">
-      <HintPath>..\..\Octane_SDK_.NET_2_24_1\lib\LLRP.Impinj.dll</HintPath>
+      <HintPath>..\123\LLRP.Impinj.dll</HintPath>
     </Reference>
     <Reference Include="OpenCvSharp">
-      <HintPath>..\..\Sample-2.4.10-20161106\packages\opencvsharp-anycpu.2.4.10.20160316\lib\net45\OpenCvSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenCvSharp.Blob">
-      <HintPath>..\..\Sample-2.4.10-20161106\packages\opencvsharp-anycpu.2.4.10.20160316\lib\net45\OpenCvSharp.Blob.dll</HintPath>
+      <HintPath>..\123\OpenCvSharp.dll</HintPath>
     </Reference>
     <Reference Include="OpenCvSharp.CPlusPlus">
-      <HintPath>..\..\Sample-2.4.10-20161106\packages\opencvsharp-anycpu.2.4.10.20160316\lib\net45\OpenCvSharp.CPlusPlus.dll</HintPath>
+      <HintPath>..\123\OpenCvSharp.CPlusPlus.dll</HintPath>
     </Reference>
     <Reference Include="OpenCvSharp.Extensions">
-      <HintPath>..\..\Sample-2.4.10-20161106\packages\opencvsharp-anycpu.2.4.10.20160316\lib\net45\OpenCvSharp.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenCvSharp.UserInterface">
-      <HintPath>..\..\Sample-2.4.10-20161106\packages\opencvsharp-anycpu.2.4.10.20160316\lib\net45\OpenCvSharp.UserInterface.dll</HintPath>
+      <HintPath>..\123\OpenCvSharp.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

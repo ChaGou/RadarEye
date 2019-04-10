@@ -16,9 +16,9 @@ namespace RadarEye
         public static int fps = 10;
         public static double circleRUp =20;
         public static int antennaNum = 60;
-        public static double interval = 0.2;//s
+        public static double interval = 0.1;//s
 
-        public static int invalidphase = 2048;
+        public static int invalidphase = 0;
         public static int invalidrss = -10000;
     }
 }

@@ -29,14 +29,44 @@ namespace RadarEye
         public MainWindow()
         {
             InitializeComponent();
+            drawGrid();
             cap = CvCapture.FromCamera(0);
             cvo = new CVO(cap, toukui);
+            cvo.deng = deng;
             rfo = new RFO();
-            toukui.Width = cap.FrameWidth;
-            toukui.Height = cap.FrameHeight;
+            //toukui.Width = cap.FrameWidth;
+            //toukui.Height = cap.FrameHeight;
             cvo.showCamera();
             if(hasReader)
                 rfo.StartRead();
+        }
+        private void drawGrid() {
+            for (int i = 0; i < 64; i++) {
+                Line myLine = new Line();
+                myLine.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+                myLine.X1 = i*10;
+                myLine.X2 = i*10;
+                myLine.Y1 = 0;
+                myLine.Y2 = 480;
+                myLine.HorizontalAlignment = HorizontalAlignment.Left;
+                myLine.VerticalAlignment = VerticalAlignment.Center;
+                myLine.StrokeThickness = 2;
+                wangge.Children.Add(myLine);
+            }
+            for (int i = 0; i < 48; i++)
+            {
+                Line myLine = new Line();
+                myLine.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
+                myLine.X1 = 0;
+                myLine.X2 = 640;
+                myLine.Y1 = i*10;
+                myLine.Y2 = i*10;
+                myLine.HorizontalAlignment = HorizontalAlignment.Left;
+                myLine.VerticalAlignment = VerticalAlignment.Center;
+                myLine.StrokeThickness = 2;
+                wangge.Children.Add(myLine);
+            }
+
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -57,7 +87,7 @@ namespace RadarEye
         {
             if (!isRecording)
             {
-                String pathString = "data2\\"+DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff") + @"\";
+                String pathString = "E:\\Data20\\" + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss-fffffff") + @"\";
                 System.IO.Directory.CreateDirectory(pathString);
                 Conf.filepath = pathString;
                 cvo.recordCamera();

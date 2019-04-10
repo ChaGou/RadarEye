@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Analyzer
 {
-    public class RFPattern
+    public class RFPatternImpinJ
     {
         public int ID; //EPC->ID
         public double t;  //s
@@ -22,5 +22,12 @@ namespace Analyzer
             }
             return -1; 
         }
+    }
+    public class RFPatternPad {
+        public int ID; //EPC->ID
+        public double t;  //s
+        public double phase;
+        public int ant;
+
     }
 }

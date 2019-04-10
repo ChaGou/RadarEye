@@ -5,13 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RadarEye"
         mc:Ignorable="d"
-        Title="采集=+=数据" Height="600" Width="600" Closing="Window_Closing">
-    <Grid>
+        Title="采集=+=数据" Height="550" Width="800" Closing="Window_Closing">
+    <Viewbox Stretch="Fill">
+        <Grid>
 
-        <Border BorderBrush="Black" BorderThickness="2" HorizontalAlignment="Left" Height="400" Margin="10,10,0,0" VerticalAlignment="Top" Width="400">
-            <Image x:Name="toukui" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        </Border>
-        <Button HorizontalAlignment="Left" x:Name="recordbutton" Content="Start Record" Margin="424,352,0,0" VerticalAlignment="Top" Width="158" Height="58" Click="recordbutton_Click"/>
+            <Border BorderBrush="Black" BorderThickness="2" HorizontalAlignment="Left" Height="480" Margin="10,10,0,0" VerticalAlignment="Top" Width="640">
+                <Image x:Name="toukui" HorizontalAlignment="Left" Height="480" Width="640" VerticalAlignment="Top"/>
 
-    </Grid>
+            </Border>
+            <Canvas HorizontalAlignment="Left" x:Name="wangge" Height="480" Margin="10,10,0,0" VerticalAlignment="Top" Width="640"/>
+            <Button HorizontalAlignment="Left" x:Name="recordbutton" Content="Start Record" Margin="650,10,0,0" VerticalAlignment="Top" Width="132" Height="269" Click="recordbutton_Click" RenderTransformOrigin="1.831,0.527"/>
+            <Ellipse Fill="#FFF4F4F5" x:Name ="deng" HorizontalAlignment="Left" Height="100" Margin="664,347,0,0" Stroke="Black" VerticalAlignment="Top" Width="100"/>
+
+
+        </Grid>
+    </Viewbox>
 </Window>

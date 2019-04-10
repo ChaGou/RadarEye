@@ -8,67 +8,73 @@ using System.Threading.Tasks;
 
 namespace Analyzer
 {
-    public class RecordAnalyzer
+    public class RecordAnalyzerPad
     {
 
-        int indexEPC = 0;
-        int indexTime = 6;
-        int indexAntenna = 1;
-        int indexChannel = 2;
-        int indexPhase = 5;
-        int indexDoppler = 3;
-        int indexRSS = 4;
+        int indexTime = 0;
+        int indexAntenna = 2;
+        int indexEPC = 3;
+        int indexPhase = 1;
         char splitChar = ' ';
-        public List<RFPattern> GetRFPatternS(String rawdatafilename, int targetAntenna)
+        public List<RFPatternPad> GetRFPatternS(String rawdatafilename,double t0)
         {
 
 
-            List<RFPattern> pl = new List<RFPattern>();
+            List<RFPatternPad> pl = new List<RFPatternPad>();
             List<String> tagReports = IOTools.ReadListFromTxt(rawdatafilename);
-            long t0 = long.Parse(tagReports[0].Split(splitChar)[indexTime]);
+            if (t0 == -1)
+            {
+                String[] ss = tagReports[0].Split(splitChar);
+                t0 = GetSecondFromString(ss[indexTime]);
+            }
 
             for (int i = 0; i < tagReports.Count; i++)
             {
                 String[] ss = tagReports[i].Split(splitChar);
-                String epc = ss[indexEPC];
-                if (int.Parse(ss[indexAntenna]) != targetAntenna)
-                    continue;
-                if (int.Parse(ss[indexChannel]) != 0)
-                    continue;
                 
 
-                    RFPattern rfp = new RFPattern();
-                    rfp.t = (long.Parse(ss[indexTime]) - t0) / Math.Pow(10, 6);
-                rfp.phase = int.Parse(ss[indexPhase]);
-                    rfp.doppler = int.Parse(ss[indexDoppler]);
-                    rfp.rss = int.Parse(ss[indexRSS]);
-                    rfp.ID = rfp.GetID(epc);
-                    pl.Add(rfp);
+
+                RFPatternPad rfp = new RFPatternPad();
+                rfp.t = (GetSecondFromString(ss[indexTime]) - t0);//chacha
+                if (rfp.t < 0)
+                    continue;
+                rfp.phase = double.Parse(ss[indexPhase]);
+                rfp.ant = int.Parse(ss[indexAntenna]);
+                rfp.ID = -1;
+                if(ss.Length > 4)
+                    rfp.ID = int.Parse(ss[indexEPC]);
+                pl.Add(rfp);
 
             }
             return pl;
         }
-        public Dictionary<double, List<RFPattern>> GetPatternsDictionary(List<RFPattern> patterns,double interval) {
-            Dictionary<double,List<RFPattern>> dict = new Dictionary<double,List<RFPattern>>();
-            foreach (RFPattern pat in patterns) {
-                double index = (int)((pat.t + 0.5 * interval) / interval)*interval;
+        public Dictionary<int, List<RFPatternPad>> GetPatternsDictionary(List<RFPatternPad> patterns, double interval,int epc)
+        {
+            Dictionary<int, List<RFPatternPad>> dict = new Dictionary<int, List<RFPatternPad>>();
+            foreach (RFPatternPad pat in patterns)
+            {
+                if (pat.ID != epc)
+                    continue;
+                int index = (int)((pat.t + 0.5 * interval) / interval);
                 if (!dict.ContainsKey(index))
                 {
-                    List<RFPattern> rfl = new List<RFPattern>();
-                    dict.Add(index,rfl);
+                    List<RFPatternPad> rfl = new List<RFPatternPad>();
+                    dict.Add(index, rfl);
                 }
                 dict[index].Add(pat);
             }
             return dict;
         }
-        public void UniformLabelDistribution(string path) {
+        public void UniformLabelDistribution(string path)
+        {
             Dictionary<string, List<string>[]> dict = new Dictionary<string, List<string>[]>();
-            int interavl = 40;
+            int interavl = 10;
             List<String> labelList = IOTools.ReadListFromTxt(path + @"\trainlabel.txt");
-            List<String> dataList = IOTools.ReadListFromTxt(path + @"\traindata2.txt");
-            for (int i = 0; i < labelList.Count; i++) {
+            List<String> dataList = IOTools.ReadListFromTxt(path + @"\refine_data.txt");
+            for (int i = 0; i < labelList.Count; i++)
+            {
                 string[] aixs = labelList[i].Split(' ');
-                string key = (int)(double.Parse(aixs[0])/interavl) +","+ (int)(double.Parse(aixs[1]) / interavl);
+                string key = (int)(double.Parse(aixs[0]) / interavl) + "," + (int)(double.Parse(aixs[1]) / interavl);
                 if (!dict.ContainsKey(key))
                 {
                     List<string>[] ldList = new List<string>[2];
@@ -80,7 +86,8 @@ namespace Analyzer
                 dict[key][1].Add(dataList[i]);
             }
             int maxcount = 0;
-            foreach (KeyValuePair<string, List<string>[]> entry in dict) {
+            foreach (KeyValuePair<string, List<string>[]> entry in dict)
+            {
                 if (maxcount < entry.Value[0].Count)
                     maxcount = entry.Value[0].Count;
             }
@@ -91,31 +98,32 @@ namespace Analyzer
             {
                 outputlabelList.AddRange(entry.Value[0]);
                 outputdataList.AddRange(entry.Value[1]);
-                for (int i = 0; i < maxcount - entry.Value[0].Count; i++) {
+                for (int i = 0; i < maxcount - entry.Value[0].Count; i++)
+                {
                     int index = r.Next(entry.Value[0].Count);
                     outputlabelList.Add(entry.Value[0][index]);
                     outputdataList.Add(entry.Value[1][index]);
                 }
             }
-            IOTools.WriteListToTxt(outputdataList,path+@"\traindataUni.txt");
+            IOTools.WriteListToTxt(outputdataList, path + @"\traindataUni.txt");
             IOTools.WriteListToTxt(outputlabelList, path + @"\trainlabelUni.txt");
 
 
         }
-        public RFPattern[] GetRFPatternVector(List<RFPattern> rpl, double time) {
-            RFPattern[] patterns = new RFPattern[Conf.antennaNum];
-            double[] dis = new double[Conf.antennaNum];
-            for (int i = 0; i < Conf.antennaNum; i++)
+        public RFPatternPad[] GetRFPatternVector(List<RFPatternPad> rpl, double time)
+        {
+            RFPatternPad[] patterns = new RFPatternPad[64];
+            double[] dis = new double[64];
+            for (int i = 0; i < 64; i++)
             {
                 dis[i] = 10000;
-                patterns[i] = new RFPattern();
+                patterns[i] = new RFPatternPad();
                 patterns[i].phase = Conf.invalidphase;
-                patterns[i].rss = Conf.invalidrss;
             }
-            foreach (RFPattern rp in rpl)
+            foreach (RFPatternPad rp in rpl)
             {
                 double d = Math.Abs(rp.t - time);
-                int index = rp.ID - 101;
+                int index = rp.ant;
                 if (dis[index] > d)
                 {
                     dis[index] = d;
@@ -125,10 +133,10 @@ namespace Analyzer
 
             return patterns;
         }
-        public int ValidNUm(RFPattern[] vec)
+        public int ValidNUm(RFPatternPad[] vec)
         {
             int num = 0;
-            foreach (RFPattern pattern in vec)
+            foreach (RFPatternPad pattern in vec)
             {
                 if (pattern.phase != Conf.invalidphase)
                     num++;
@@ -136,37 +144,21 @@ namespace Analyzer
             // Console.WriteLine(num);
             return num;
         }
-        public double[] GetPhaseVector(List<RFPattern> rpl,double time) {
-            double[] phases = new double[Conf.antennaNum];
-            double[] dis = new double[Conf.antennaNum];
-            for (int i = 0; i < Conf.antennaNum;i++) {
-                dis[i] = 10000;
-                phases[i] = Conf.invalidphase;
-            }
-            foreach (RFPattern rp in rpl) {
-                double d = Math.Abs(rp.t - time);
-                int index = rp.ID - 101;
-                if (dis[index] > d) {
-                    dis[index] = d;
-                    phases[index] = rp.phase;
-                }
-            }
-                
-            return phases;
-        }
-        public int ValidNUm(double[] vec) {
+        public int ValidNUm(double[] vec)
+        {
             int num = 0;
-            foreach (double phase in vec) {
+            foreach (double phase in vec)
+            {
                 if (phase != Conf.invalidphase)
                     num++;
             }
-           // Console.WriteLine(num);
+            // Console.WriteLine(num);
             return num;
         }
         public String VecToString(double[] vec)
         {
             String s = "";
-            for(int i = 0; i < vec.Length -1;i++)
+            for (int i = 0; i < vec.Length - 1; i++)
             {
                 s += vec[i];
                 s += " ";
@@ -174,49 +166,84 @@ namespace Analyzer
             s += vec[vec.Length - 1];
             return s;
         }
-        public String VecToString(RFPattern[] vec)
+        public String VecToString(RFPatternPad[] vec)
         {
             String s = "";
-            for (int i = 0; i < vec.Length; i++)
+            for (int i = 0; i < vec.Length-1; i++)
             {
-                s += Math.Cos(vec[i].phase/4096.0*Math.PI*4);
+                s += vec[i].phase;
                 s += " ";
-             //   s += vec[i].rss/-10000.0;
-             //   s += " ";
+                //   s += vec[i].rss/-10000.0;
+                //   s += " ";
             }
+            s += vec[vec.Length - 1].phase;
 
-            for (int i = 0; i < vec.Length - 1; i++)
-            {
-                   s += vec[i].rss/-10000.0;
-                   s += " ";
-            }
-             s += " ";
-             s += vec[vec.Length - 1].rss/-10000.0;
             return s;
         }
-        public void DoAna(String path,out List<String> label,out List<String> data) {
+        public double GetSecondFromString(String s) {
+            double t = 0;
+            String[] ss = s.Split('.');
+           // int year = int.Parse(ss[0].Substring(0, 4));
+           // int month = int.Parse(ss[0].Substring(4, 2));
+            int day = int.Parse(ss[0].Substring(6, 2));
+            int hour = int.Parse(ss[0].Substring(8, 2));
+            int minute = int.Parse(ss[0].Substring(10, 2));
+            int second = int.Parse(ss[0].Substring(12, 2));
+            second = ((day * 24 + hour) * 60 + minute) * 60 + second;
+            
+            t = double.Parse(second + "." + ss[1]);
+
+            return t;
+        }
+        public double GetSecondFromPath(String path) {
+            String[] ss = path.Split('\\');
+            String time = ss[ss.Length - 1];
+            ss = time.Split('-');
+            String s = "";
+            for (int i = 0; i < ss.Length - 1; i++)
+                s += ss[i];
+            s += '.';
+            s += ss[ss.Length - 1];
+            return GetSecondFromString(s);
+        }
+        public void DoAna(String path, out List<String> label, out List<String> data,out List<String> recordTime) 
+        {
             label = new List<string>();
             data = new List<string>();
             List<String> indexList = new List<string>();
-            List<String> targetList = IOTools.ReadListFromTxt(path+@"\target.txt");
-            List<RFPattern> rfl = GetRFPatternS(path+@"\RFData.txt",1);
-            Console.WriteLine(rfl[rfl.Count-1].t-rfl[0].t);
-            Dictionary<double, List<RFPattern>> RFdict = GetPatternsDictionary(rfl, Conf.interval);
-            for (int i = 0; i < targetList.Count; i++) {
+            recordTime = new List<string>();
+            List<String> targetList = IOTools.ReadListFromTxt(path + @"\target.txt");
+            double t0 = GetSecondFromPath(path);
+            List<RFPatternPad> rfl = GetRFPatternS(path + @"\usrp_data\RFData.txt", t0);
+            List<String> timeList = IOTools.ReadListFromTxt(path+@"\t.txt");
+            Dictionary<int, List<RFPatternPad>> RFdict = GetPatternsDictionary(rfl, Conf.interval,-1);
+            List<String> DictKeys = new List<string>();
+            foreach (double key in RFdict.Keys) {
+                DictKeys.Add(key + "");
+            }
+            IOTools.WriteListToTxt(DictKeys, path + @"\dictkeys.txt");
+            for (int i = 0; i < targetList.Count; i++)
+            {
                 String[] ss = targetList[i].Split(' ');
-                int k = int.Parse(ss[0]);
-                if (k % (int)(Conf.interval * Conf.fps) == 0) {
-                    if (double.Parse(ss[1]) != 10000 && double.Parse(ss[2]) != 10000) {
-                        double t = k * 1.0 / Conf.fps;
-                        if (!RFdict.ContainsKey(t)) {
+                int targetFrame = int.Parse(ss[0]);
+                int k = (int)((GetSecondFromPath(timeList[targetFrame]) - t0)*Conf.fps+0.5) ;
+                if (k % (int)(Conf.interval * Conf.fps) == 0)
+                {
+                    if (double.Parse(ss[1]) != 10000 && double.Parse(ss[2]) != 10000)
+                    {
+                        int t = k;
+                        if (!RFdict.ContainsKey(t))
+                        {
                             continue;
                         }
-                        RFPattern[] vec = GetRFPatternVector(RFdict[t], t);
-                        if (ValidNUm(vec) >= Conf.antennaNum * 1)
+                        RFPatternPad[] vec = GetRFPatternVector(RFdict[t], t*0.1);
+                        Console.WriteLine(ValidNUm(vec));
+                        if (ValidNUm(vec) >= 64 * 0.95)
                         {
                             label.Add(ss[1] + " " + ss[2]);
                             data.Add(VecToString(vec));
-                            indexList.Add("" + k);
+                            indexList.Add("" + targetFrame);
+                            recordTime.Add(""+ (GetSecondFromPath(timeList[targetFrame]) - t0));
                         }
                         /* double[] vec = GetPhaseVector(RFdict[t],t);
                          if (ValidNUm(vec) >= Conf.antennaNum * 1) {
@@ -227,10 +254,60 @@ namespace Analyzer
                     }
                 }
             }
-            IOTools.WriteListToTxt(indexList,path+@"\index.txt");
+            IOTools.WriteListToTxt(indexList, path + @"\index.txt");
+            
+        }
+        public void DoAnaRunning(String path, out List<String> data,int epc)
+        {
+            data = new List<string>();
+            double t0 = GetSecondFromPath(path);
+            List<RFPatternPad> rfl = GetRFPatternS(path + @"\usrp_data\RFData.txt", t0);
+            List<String> indexList = new List<string>();
+            Dictionary<int, List<RFPatternPad>> RFdict = GetPatternsDictionary(rfl, Conf.interval,epc);
+            List<String> DictKeys = new List<string>();
+            foreach (double key in RFdict.Keys)
+            {
+                DictKeys.Add(key + "");
+            }
+            IOTools.WriteListToTxt(DictKeys, path + @"\dictkeys.txt");
+            List<String> timeList = IOTools.ReadListFromTxt(path + @"\t.txt");
+            for (int i = 0; i < timeList.Count; i++) {
+                int k = (int)((GetSecondFromPath(timeList[i]) - t0) * Conf.fps + 0.5);
+                if (k % (int)(Conf.interval * Conf.fps) == 0)
+                {
+                    
+                        int t = k;
+                        if (!RFdict.ContainsKey(t))
+                        {
+                            continue;
+                        }
+                        RFPatternPad[] vec = GetRFPatternVector(RFdict[t], t*0.1);
+                        Console.WriteLine(ValidNUm(vec));
+                        if (ValidNUm(vec) >= 64 * 0.4)//chachacha
+                        {
+                            data.Add(VecToString(vec));
+                            indexList.Add("" + i);
+
+                        }
+                        /* double[] vec = GetPhaseVector(RFdict[t],t);
+                         if (ValidNUm(vec) >= Conf.antennaNum * 1) {
+                             label.Add(ss[1]+" "+ss[2]);
+                             data.Add(VecToString(vec));
+                             indexList.Add(""+k);
+                         }*/
+                    
+                }
+
+            }
+            if(epc == -1)
+            IOTools.WriteListToTxt(indexList, path + @"\index.txt");
+            else
+                IOTools.WriteListToTxt(indexList, path + @"\index"+epc+".txt");
+
+
 
         }
 
-        
+
     }
 }
